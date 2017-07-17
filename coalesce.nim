@@ -1,23 +1,23 @@
 import options
 
-proc `??`*[T](left: Option[T], right: Option[T]): Option[T] =
-  if isSome(left): return left else: return right
+template `??`*[T](left: Option[T], right: Option[T]): Option[T] =
+  if isSome(left): left else: right
 
-proc `??`*[T](left: Option[T], right: T): T =
-  if isSome(left): return left.get() else: return right
+template `??`*[T](left: Option[T], right: T): T =
+  if isSome(left): left.get() else: right
 
-proc `??`*[T](left: T, right: Option[T]): Option[T] =
-  if left != nil: return some(left) else: return right
+template `??`*[T](left: T, right: Option[T]): Option[T] =
+  if left != nil: some(left) else: right
 
-proc `??`*[T](left: T, right: T): T =
-  if left != nil: return left else: return right
+template `??`*[T](left: T, right: T): T =
+  if left != nil: left else: right
 
 
-proc `==`[T](left: Option[T], right: T): bool =
-  if isSome(left): return left.get() == right else: return false
+template `==`[T](left: Option[T], right: T): bool =
+  if isSome(left): left.get() == right else: false
 
-proc `==`[T](left: T, right: Option[T]): bool =
-  return right == left
+template `==`[T](left: T, right: Option[T]): bool =
+  right == left
 
 
 when isMainModule:
@@ -130,3 +130,25 @@ when isMainModule:
       let b: string = nil
       let c: Option[string] = some("c")
       check((a ?? b ?? c) == c)
+
+  suite "short circuit options":
+    test "first some":
+      proc getA(): Option[string] = return some("a")
+      proc getB(): Option[string] = raise newException(ValueError, "expensive operation")
+      let x = getA() ?? getB()
+    test "first none":
+      proc getA(): Option[string] = return none(string)
+      proc getB(): Option[string] = raise newException(ValueError, "expensive operation")
+      expect ValueError:
+        let x = getA() ?? getB()
+
+  suite "short circuit raws":
+    test "first not nil":
+      proc getA(): string = return "a"
+      proc getB(): string = raise newException(ValueError, "expensive operation")
+      let x = getA() ?? getB()
+    test "first nil":
+      proc getA(): string = return nil
+      proc getB(): string = raise newException(ValueError, "expensive operation")
+      expect ValueError:
+        let x = getA() ?? getB()

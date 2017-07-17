@@ -16,11 +16,10 @@ The operator also supports `Option[T]`.
     let x = a ?? "b"
     assert x == "b"
 
-Longer expressions work too.
+Longer chains work too, and the expression short-circuits if possible.
 
-    let result = tryWayOne(input) ?? tryWayTwo(input) ?? tryWayThree(input) ?? myDefault
+    let result = tryComputeFast(input) ?? tryComputeSlow(input) ?? myDefault
 
 ## todo
 
 - support for `not nil`
-- short-circuit evaluation
