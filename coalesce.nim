@@ -1,16 +1,16 @@
 import options
 
-template `??`*[T](left: Option[T], right: Option[T]): Option[T] =
-  if isSome(left): left else: right
-
-template `??`*[T](left: Option[T], right: T): T =
-  if isSome(left): left.get() else: right
+template `??`*[T](left: T, right: T): T =
+  if left != nil: left else: right
 
 template `??`*[T](left: T, right: Option[T]): Option[T] =
   if left != nil: some(left) else: right
 
-template `??`*[T](left: T, right: T): T =
-  if left != nil: left else: right
+template `??`*[T](left: Option[T], right: T): T =
+  if isSome(left): left.get() ?? right else: right
+
+template `??`*[T](left: Option[T], right: Option[T]): Option[T] =
+  if isSome(left): left.get() ?? right else: right
 
 
 template `==`[T](left: Option[T], right: T): bool =
@@ -32,6 +32,10 @@ when isMainModule:
       let a: Option[string] = none(string)
       let b: Option[string] = some("b")
       check((a ?? b) == b)
+    test "left some nil":
+      let a: Option[string] = some(string(nil))
+      let b: Option[string] = some("b")
+      check((a ?? b) == b)
 
   suite "coalesce option and raw":
     test "left some":
@@ -40,6 +44,10 @@ when isMainModule:
       check((a ?? b) == a)
     test "left none":
       let a: Option[string] = none(string)
+      let b: string = "b"
+      check((a ?? b) == b)
+    test "left some nil":
+      let a: Option[string] = some(string(nil))
       let b: string = "b"
       check((a ?? b) == b)
 
@@ -135,20 +143,20 @@ when isMainModule:
     test "first some":
       proc getA(): Option[string] = return some("a")
       proc getB(): Option[string] = raise newException(ValueError, "expensive operation")
-      let x = getA() ?? getB()
+      discard getA() ?? getB()
     test "first none":
       proc getA(): Option[string] = return none(string)
       proc getB(): Option[string] = raise newException(ValueError, "expensive operation")
       expect ValueError:
-        let x = getA() ?? getB()
+        discard getA() ?? getB()
 
   suite "short circuit raws":
     test "first not nil":
       proc getA(): string = return "a"
       proc getB(): string = raise newException(ValueError, "expensive operation")
-      let x = getA() ?? getB()
+      discard getA() ?? getB()
     test "first nil":
       proc getA(): string = return nil
       proc getB(): string = raise newException(ValueError, "expensive operation")
       expect ValueError:
-        let x = getA() ?? getB()
+        discard getA() ?? getB()
