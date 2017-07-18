@@ -1,10 +1,15 @@
 import options
 
+# dummy check for non-nilable types # todo: better way
+proc isNil[T: not proc and not ref and not ptr](x: T): bool =
+  return false
+
+
 template `??`*[T](left: T, right: T): T =
-  if left != nil: left else: right
+  if not isNil(left): left else: right
 
 template `??`*[T](left: T, right: Option[T]): Option[T] =
-  if left != nil: some(left) else: right
+  if not isNil(left): some(left) else: right
 
 template `??`*[T](left: Option[T], right: T): T =
   if isSome(left): left.get() ?? right else: right
@@ -36,6 +41,10 @@ when isMainModule:
       let a: Option[string] = some(string(nil))
       let b: Option[string] = some("b")
       check((a ?? b) == b)
+    test "left not nillable":
+      let a: Option[int] = some(0)
+      let b: Option[int] = some(1)
+      check((a ?? b) == a)
 
   suite "coalesce option and raw":
     test "left some":
@@ -70,6 +79,10 @@ when isMainModule:
       let a: string = nil
       let b: string = "b"
       check((a ?? b) == b)
+    test "left not nillable":
+      let a: int = 0
+      let b: int = 1
+      check((a ?? b) == a)
 
   suite "coalesce options and raw":
     test "first some":
