@@ -1,15 +1,16 @@
 import options
 
-# dummy check for non-nilable types # todo: better way
-proc isNil[T: not proc and not ref and not ptr](x: T): bool =
-  return false
-
-
 template `??`*[T](left: T, right: T): T =
-  if not isNil(left): left else: right
+  when not compiles(isNil(left)):
+    left
+  else:
+    if not isNil(left): left else: right
 
 template `??`*[T](left: T, right: Option[T]): Option[T] =
-  if not isNil(left): some(left) else: right
+  when not compiles(isNil(left)):
+    some(left)
+  else:
+    if not isNil(left): some(left) else: right
 
 template `??`*[T](left: Option[T], right: T): T =
   if isSome(left): left.get() ?? right else: right
@@ -18,15 +19,14 @@ template `??`*[T](left: Option[T], right: Option[T]): Option[T] =
   if isSome(left): left.get() ?? right else: right
 
 
-template `==`[T](left: Option[T], right: T): bool =
-  if isSome(left): left.get() == right else: false
-
-template `==`[T](left: T, right: Option[T]): bool =
-  right == left
-
-
 when isMainModule:
   import unittest
+
+  template `==`[T](left: Option[T], right: T): bool =
+    if isSome(left): left.get() == right else: false
+
+  template `==`[T](left: T, right: Option[T]): bool =
+    right == left
 
   suite "coalesce option and option":
     test "left some":
