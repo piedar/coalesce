@@ -1,21 +1,25 @@
 import options
 
 template `??`*[T](left: T, right: T): T =
+  ## Returns ``left`` if not nil or ``right`` otherwise.
   when not compiles(isNil(left)):
     left
   else:
     if not isNil(left): left else: right
 
 template `??`*[T](left: T, right: Option[T]): Option[T] =
+  ## Returns ``left`` as an option if not nil or ``right`` otherwise.
   when not compiles(isNil(left)):
     some(left)
   else:
     if not isNil(left): some(left) else: right
 
 template `??`*[T](left: Option[T], right: T): T =
+  ## Returns the contents of ``left`` if exists and not nil or ``right`` otherwise.
   if isSome(left): left.get() ?? right else: right
 
 template `??`*[T](left: Option[T], right: Option[T]): Option[T] =
+  ## Returns ``left`` if exists and not nil or ``right`` otherwise.
   if isSome(left): left.get() ?? right else: right
 
 
